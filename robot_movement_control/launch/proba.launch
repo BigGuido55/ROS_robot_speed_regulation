@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+	<node name="tf_publish_actor" type="tf_publish_actor.py" pkg="robot_movement_control"/>
+	<node name="tf_robot" type="tf_robot.py" pkg="robot_movement_control"/>
+	<node name="tf_distance_listener" type="tf_distance_listener.py" pkg="robot_movement_control" output="screen"/>
+</launch>
