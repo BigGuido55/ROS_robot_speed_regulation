@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>robot_movement_control</name>
+  <name>ROS_robot_speed_regulation</name>
   <version>0.0.0</version>
-  <description>The robot movement control based on position of goal object</description>
+  <description>The robot speed regulation based on position of a certain object</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

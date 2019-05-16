@@ -3,6 +3,7 @@ from gazebo_msgs.srv import GetModelState
 import rospy
 import tf2_ros
 import geometry_msgs.msg
+import sys
 
 if __name__ == '__main__':
 	rospy.init_node('animated_box')
@@ -11,12 +12,12 @@ if __name__ == '__main__':
 		try:
 			broad = tf2_ros.TransformBroadcaster()
 			model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-			coordinates = model('animated_box', '')
+			coordinates = model(sys.argv[1], '')		
 
 			t = geometry_msgs.msg.TransformStamped()
 			t.header.stamp = rospy.Time.now()
-			t.header.frame_id = "ground_zero"
-			t.child_frame_id = "animated_box"
+			t.header.frame_id = sys.argv[2]				
+			t.child_frame_id = sys.argv[1]				
 			t.transform.translation.x = coordinates.pose.position.x
 			t.transform.translation.y = coordinates.pose.position.y
 			t.transform.translation.z = coordinates.pose.position.z

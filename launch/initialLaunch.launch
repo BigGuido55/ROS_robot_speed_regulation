@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="map"/>
+	<arg name="robot"/>
+	<arg name="actor"/>
+	<node name="tf_publish_actor" type="tf_publish_actor.py" pkg="ROS_robot_speed_regulation" args="$(arg actor) $(arg map)"/>
+	<node name="tf_distance_listener" type="tf_distance_listener.py" pkg="ROS_robot_speed_regulation" args="$(arg actor) $(arg robot)" output="screen"/>
+</launch>
