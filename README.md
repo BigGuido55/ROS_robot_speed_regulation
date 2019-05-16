@@ -11,6 +11,7 @@ To launch this package, use the following command:
 roslaunch ROS_robot_speed_regulation initialLaunch.launch actor:="*actorName*" map:="*mapTfName*" robot:="*robotTfName*"
 
 where:
+
   -*actorName* denotes a name of an object inside a Gazebo world, this argument is used to extract transform of an object from one of Gazebo's rostopics and will be used to connect that object's transform to the root tf tree node
   
   -*mapTfName* denotes a name of root tf tree node, robot must already be connected to this node
