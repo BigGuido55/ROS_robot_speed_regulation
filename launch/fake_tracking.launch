@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="global_frame" default="pioneer/map"/>
+	<arg name="tracking_frame" default="pioneer/odom"/>
+	<arg name="object_name" default="animated_box"/>
+	<node name="fake_tracking" type="fake_tracking.py" pkg="tracking_navigation">
+	 	<param name="global_frame" value="$(arg global_frame)"/>
+		<param name="object_name" value="$(arg object_name)"/>
+	</node>
+	<node name="relative_pose_publisher" type="relative_pose_publisher.py" pkg="tracking_navigation" output="screen">
+		<param name="tracking_frame" value="$(arg tracking_frame)"/>
+		<param name="object_name" value="$(arg object_name)"/>
+	</node>
+</launch>

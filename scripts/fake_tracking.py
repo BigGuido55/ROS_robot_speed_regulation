@@ -6,18 +6,20 @@ import geometry_msgs.msg
 import sys
 
 if __name__ == '__main__':
-	rospy.init_node('animated_box')
+	rospy.init_node('actor_node')
 	rate = rospy.Rate(100)
+	global_frame = rospy.get_param("~global_frame")
+	object_name = rospy.get_param("~object_name")
 	while True:	
 		try:
 			broad = tf2_ros.TransformBroadcaster()
 			model = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-			coordinates = model(sys.argv[1], '')		
+			coordinates = model(object_name, '')		
 
 			t = geometry_msgs.msg.TransformStamped()
 			t.header.stamp = rospy.Time.now()
-			t.header.frame_id = sys.argv[2]				
-			t.child_frame_id = sys.argv[1]				
+			t.header.frame_id = global_frame				
+			t.child_frame_id = object_name				
 			t.transform.translation.x = coordinates.pose.position.x
 			t.transform.translation.y = coordinates.pose.position.y
 			t.transform.translation.z = coordinates.pose.position.z

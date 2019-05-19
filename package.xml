@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ROS_robot_speed_regulation</name>
+  <name>tracking_navigation</name>
   <version>0.0.0</version>
   <description>The robot speed regulation based on position of a certain object</description>
 
