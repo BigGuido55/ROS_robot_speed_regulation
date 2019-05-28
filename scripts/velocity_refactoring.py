@@ -9,56 +9,66 @@ from geometry_msgs.msg import Point
 
 class Node():
 	def write_pose(self, data):
-		self.distance = data.pose
-		#print self.distance
+		self.pose = data.pose
 
 	def calculate_distance(self, position):
 		return math.sqrt(math.pow(position.x, 2) + math.pow(position.y, 2))
 
 	#TODO create a proper apply_velocity function
 	def apply_velocity(self, data):
-		orientation = self.distance.orientation
+		orientation = self.pose.orientation
 		quat_list = [orientation.x, orientation.y, orientation.z, orientation.w]
 		(roll, pitch, yaw) = euler_from_quaternion(quat_list)
-		#print yaw
 		
 		new_distance = Point()
-		new_distance.x = self.distance.position.x + self.apply_vel_coef * data.linear.x * math.cos(yaw)
-		new_distance.y = self.distance.position.y + self.apply_vel_coef * data.linear.x * math.sin(yaw)
+		new_distance.x = self.pose.position.x + self.delta_time * data.linear.x * math.cos(yaw)
+		new_distance.y = self.pose.position.y + self.delta_time * data.linear.x * math.sin(yaw)
 		return new_distance
 
 	def callback(self, data):
-		print data
-		factor = 0.0
-		cur_distance = self.calculate_distance(self.distance.position)
+		#print data
+		max_vel_factor = rospy.get_param("~max_vel_factor")
+		ideal_distance = rospy.get_param("~ideal_distance")
+
+		vel_factor = 0.0
+		cur_distance = self.calculate_distance(self.pose.position)
 		print ("distance: " + str(cur_distance))
-		if cur_distance < 0.25: factor = 1.3
-		elif 0.25 <= cur_distance <= 1.0: factor = (3 - cur_distance) / 2
-		elif 1.0 <= cur_distance <= 2: factor = 2 - cur_distance
 
-		if self.calculate_distance(self.apply_velocity(data)) < cur_distance: factor = self.max_factor - factor
+		if self.calculate_distance(self.apply_velocity(data)) < cur_distance:
+			if (0.4 * ideal_distance) <= cur_distance <= ideal_distance:
+				vel_factor = (5 * cur_distance / ideal_distance - 2) / 3
+			elif ideal_distance <= cur_distance <= 2 * ideal_distance:
+				vel_factor = (max_vel_factor - 1) * (cur_distance / ideal_distance - 1) + 1
+			elif cur_distance >= 2 * ideal_distance:
+				vel_factor = max_vel_factor
+		else:
+			if cur_distance < (0.4 * ideal_distance): 
+				vel_factor = max_vel_factor
+			elif (0.4 * ideal_distance) <= cur_distance <= ideal_distance: 
+				vel_factor = (5 * cur_distance * (1 - max_vel_factor) / ideal_distance - 2 + 5 * max_vel_factor) / 3
+			elif ideal_distance <= cur_distance <= 2 * ideal_distance: 
+				vel_factor = 2 - cur_distance / ideal_distance
 
-		data.linear.x *= factor
-		data.linear.y *= factor
-		data.linear.z *= factor
-		if factor != 0:
-			data.angular.x *= factor
-			data.angular.y *= factor
-			data.angular.z *= factor
-		print ("factor: " + str(factor))
+		data.linear.x *= vel_factor
+		data.linear.y *= vel_factor
+		data.linear.z *= vel_factor
+		if vel_factor != 0:
+			data.angular.x *= vel_factor
+			data.angular.y *= vel_factor
+			data.angular.z *= vel_factor
+		print ("factor: " + str(vel_factor) + "\n")
 		self.pub.publish(data)
 
 	def __init__(self):
-		self.apply_vel_coef = 0.1
-		self.max_factor = 1.3
+		self.delta_time = 0.1
 		self.pub = rospy.Publisher('pioneer/cmd_vel', Twist, queue_size=1)
-		self.distance = Pose()
+		self.pose = Pose()
 		self.time = rospy.Time.now()
 		rospy.Subscriber('cmd_vel', Twist, self.callback)
 		rospy.Subscriber('relative_pose', PoseStamped, self.write_pose)
 
 if __name__ == '__main__':
-	rospy.init_node("vel_refac")
+	rospy.init_node("vel_refactoring")
 	try:
 		node = Node()
 		while not rospy.is_shutdown():

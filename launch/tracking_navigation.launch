@@ -12,4 +12,6 @@
 		<param name="tracking_frame" value="$(arg tracking_frame)"/>
 		<param name="object_name" value="$(arg object_name)"/>
 	</node>
+
+	<include file="$(find tracking_navigation)/launch/move_base_pioneer.launch"/>
 </launch>

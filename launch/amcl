@@ -1,1 +1,0 @@
-rosrun amcl amcl _use_sim_time:=true _use_map_topic:=true scan:=/pioneer/front_laser _odom_frame_id:=/pioneer/odom _base_frame_id:=/pioneer/base_link _global_frame_id:=/pioneer/map _tf_broadcast:=false
