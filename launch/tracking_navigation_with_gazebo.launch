@@ -3,6 +3,8 @@
 	<arg name="global_frame" default="pioneer/map"/>
 	<arg name="tracking_frame" default="pioneer/base_link"/>
 	<arg name="object_name" default="animated_box"/>
+	<arg name="max_vel_factor" default="1.3"/>
+	<arg name="ideal_distance" default="2"/>
 
 	<node name="fake_tracking" type="fake_tracking.py" pkg="tracking_navigation">
 	 	<param name="global_frame" value="$(arg global_frame)"/>
@@ -14,4 +16,9 @@
 	</node>
 
 	<include file="$(find tracking_navigation)/launch/move_base_pioneer.launch"/>
+
+	<node name="velocity_refactoring" type="velocity_refactoring.py" pkg="tracking_navigation" output="screen">
+		<param name="max_vel_factor" value="$(arg max_vel_factor)"/>
+		<param name="ideal_distance" value="$(arg ideal_distance)"/>
+	</node>
 </launch>

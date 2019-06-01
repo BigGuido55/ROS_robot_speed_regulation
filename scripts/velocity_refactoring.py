@@ -63,7 +63,6 @@ class Node():
 		self.delta_time = 0.1
 		self.pub = rospy.Publisher('pioneer/cmd_vel', Twist, queue_size=1)
 		self.pose = Pose()
-		self.time = rospy.Time.now()
 		rospy.Subscriber('cmd_vel', Twist, self.callback)
 		rospy.Subscriber('relative_pose', PoseStamped, self.write_pose)
 

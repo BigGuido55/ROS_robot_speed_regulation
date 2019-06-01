@@ -1,20 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-	<arg name="max_vel_factor" default="1.3"/>
-	<arg name="ideal_distance" default="1"/>
-
   <node pkg="move_base" type="move_base" respawn="false" name="move_base">
-    <rosparam file="$(find tracking_navigation)/move_base_params/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find tracking_navigation)/move_base_params/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find tracking_navigation)/move_base_params/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find tracking_navigation)/move_base_params/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find tracking_navigation)/move_base_params/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find tracking_navigation)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find tracking_navigation)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find tracking_navigation)/params/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find tracking_navigation)/params/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find tracking_navigation)/params/base_local_planner_params.yaml" command="load" />
 	<remap from="map" to="pioneer/map"/>
   </node>
-
-  <node name="velocity_refactoring" type="velocity_refactoring.py" pkg="tracking_navigation" output="screen">
-		<param name="max_vel_factor" value="$(arg max_vel_factor)"/>
-		<param name="ideal_distance" value="$(arg ideal_distance)"/>
-	</node>
-
 </launch>
