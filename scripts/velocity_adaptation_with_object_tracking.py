@@ -12,16 +12,12 @@ from obstacle_detector.msg import CircleObstacle
 class Node():
 	def write_robot_pose(self, data):
 		self.pioneerPose = data.pose
-		#print self.pioneerPose
 
 	def write_robot_goal(self, data):
 		self.pioneerGoalPose = data.pose
-		#print self.pioneerGoalPose
 
 	def write_circles(self, data):
 		self.circles = data.circles
-		#print self.circles
-		#print "\n"
 
 	def calculate_distance(self, firstPosition, secondPosition):
 		return math.sqrt(math.pow((firstPosition.x - secondPosition.x), 2) + math.pow((firstPosition.y - secondPosition.y), 2))
@@ -47,6 +43,8 @@ class Node():
 			return True
 
 	def update_actor(self):
+		same_object_distance = rospy.get_param("~same_object_distance")
+
 		for circle in self.circles:
 			#print self.calculate_distance(self.actor.center, circle.center)
 			if self.calculate_distance(self.actor.center, circle.center) < 0.2:
@@ -56,15 +54,15 @@ class Node():
 		self.count += 1
 		print "no actor: " + str(self.count)
 
-	#TODO create a proper apply_velocity function
 	def apply_velocity(self, data):
+		self.time_delta = rospy.get_param("~time_delta")
 		orientation = self.pioneerPose.orientation
 		quat_list = [orientation.x, orientation.y, orientation.z, orientation.w]
 		(roll, pitch, yaw) = euler_from_quaternion(quat_list)
 		
 		new_distance = Point()
-		new_distance.x = self.pioneerPose.position.x + self.delta_time * data.linear.x * math.cos(yaw)
-		new_distance.y = self.pioneerPose.position.y + self.delta_time * data.linear.x * math.sin(yaw)
+		new_distance.x = self.pioneerPose.position.x + self.time_delta * data.linear.x * math.cos(yaw)
+		new_distance.y = self.pioneerPose.position.y + self.time_delta * data.linear.x * math.sin(yaw)
 		return new_distance
 
 	def stop_robot(self):
@@ -78,14 +76,13 @@ class Node():
 		self.pub.publish(data)
 
 	def callback(self, data):
-		print "Do cilja: " + str(self.calculate_distance(self.pioneerPose.position, self.pioneerGoalPose.position))
-		if self.calculate_distance(self.pioneerPose.position, self.pioneerGoalPose.position) < self.acceptableDistance:	#TELLS ROBOT TO STOP SPINNING, NEEDS REFINING
+		distance_to_goal = rospy.get_param("~distance_to_goal")			#STOPS IF ROBOT IS CLOSER TO GOAL THAN THIS VALUE
+		max_num_of_no_actor = rospy.get_param("~max_num_of_no_actor")
+
+		if self.calculate_distance(self.pioneerPose.position, self.pioneerGoalPose.position) < distance_to_goal:	#TELLS ROBOT TO STOP SPINNING, NEEDS REFINING
 			self.stop_robot()
 			self.actor = None
 			return
-
-		max_vel_factor = rospy.get_param("~max_vel_factor")
-		ideal_distance = rospy.get_param("~ideal_distance")
 
 		if self.actor == None:
 			if not self.find_actor():
@@ -93,9 +90,13 @@ class Node():
 				return
 		else:
 			self.update_actor()
-			if self.count > 100:
+			if self.count >= max_num_of_no_actor:
 				self.stop_robot()
 				rospy.signal_shutdown("Actor has been lost!!!")
+
+		max_vel_factor = rospy.get_param("~max_vel_factor")
+		ideal_distance = rospy.get_param("~ideal_distance")
+		
 
 		vel_factor = 0.0
 		cur_distance = self.calculate_distance(self.pioneerPose.position, self.actor.center)
@@ -123,16 +124,14 @@ class Node():
 			data.angular.x *= vel_factor
 			data.angular.y *= vel_factor
 			data.angular.z *= vel_factor
-		print data
+		#print data
 		print ("factor: " + str(vel_factor) + "\n")
 		self.pub.publish(data)
 
 	def __init__(self):
-		self.delta_time = 0.01
-		self.acceptableDistance = 0.4			#FOR STOPPING AT THE GOAL
 		self.pub = rospy.Publisher('pioneer/cmd_vel', Twist, queue_size=1)
 		self.pioneerPose = Pose()
-		self.count = 0					#IF REACHES 250, WE LOST ACTOR
+		self.count = 0					#IF REACHES max_num_of_no_actor WE LOST ACTOR --> END NODE
 		self.actor = None
 		self.circles = None
 		rospy.Subscriber('cmd_vel', Twist, self.callback)
@@ -141,7 +140,7 @@ class Node():
 		rospy.Subscriber('obstacles', Obstacles, self.write_circles)
 
 if __name__ == '__main__':
-	rospy.init_node("vel_refac_with_circle_tracking")
+	rospy.init_node("vel_adapt_with_object_tracking")
 	try:
 		node = Node()
 		while not rospy.is_shutdown():

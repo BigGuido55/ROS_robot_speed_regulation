@@ -5,6 +5,10 @@
 	<arg name="object_name" default="pioneer/map"/>
 	<arg name="max_vel_factor" default="1.3"/>
 	<arg name="ideal_distance" default="2"/>
+	<arg name="time_delta" default="0.04"/>
+	<arg name="distance_to_goal" default="0.35"/>
+	<arg name="max_num_of_no_actor" default="100"/>
+	<arg name="same_object_distance" default="0.2"/>
 
 	<node name="relative_pose_publisher" type="relative_pose_publisher.py" pkg="tracking_navigation">
 		<param name="tracking_frame" value="$(arg tracking_frame)"/>
@@ -14,8 +18,12 @@
 	<include file="$(find tracking_navigation)/launch/move_base_pioneer.launch"/>
 	<include file="$(find obstacle_detector)/launch/nodes.launch"/>
 
-	<node name="vel_refac_with_circle_tracking" type="vel_refac_with_circle_tracking.py" pkg="tracking_navigation" output="screen">
+	<node name="velocity_adaptation_with_object_tracking" type="velocity_adaptation_with_object_tracking.py" pkg="tracking_navigation" output="screen">
 		<param name="max_vel_factor" value="$(arg max_vel_factor)"/>
 		<param name="ideal_distance" value="$(arg ideal_distance)"/>
+		<param name="time_delta" value="$(arg time_delta)"/>
+		<param name="distance_to_goal" value="$(arg distance_to_goal)"/>
+		<param name="max_num_of_no_actor" value="$(arg max_num_of_no_actor)"/>
+		<param name="same_object_distance" value="$(arg same_object_distance)"/>
 	</node>
 </launch>

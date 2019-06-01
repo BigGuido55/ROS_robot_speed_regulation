@@ -14,21 +14,21 @@ class Node():
 	def calculate_distance(self, position):
 		return math.sqrt(math.pow(position.x, 2) + math.pow(position.y, 2))
 
-	#TODO create a proper apply_velocity function
 	def apply_velocity(self, data):
 		orientation = self.pose.orientation
 		quat_list = [orientation.x, orientation.y, orientation.z, orientation.w]
 		(roll, pitch, yaw) = euler_from_quaternion(quat_list)
 		
 		new_distance = Point()
-		new_distance.x = self.pose.position.x + self.delta_time * data.linear.x * math.cos(yaw)
-		new_distance.y = self.pose.position.y + self.delta_time * data.linear.x * math.sin(yaw)
+		new_distance.x = self.pose.position.x + self.time_delta * data.linear.x * math.cos(yaw)
+		new_distance.y = self.pose.position.y + self.time_delta * data.linear.x * math.sin(yaw)
 		return new_distance
 
 	def callback(self, data):
 		#print data
 		max_vel_factor = rospy.get_param("~max_vel_factor")
 		ideal_distance = rospy.get_param("~ideal_distance")
+		self.time_delta = rospy.get_param("~time_delta")
 
 		vel_factor = 0.0
 		cur_distance = self.calculate_distance(self.pose.position)
@@ -60,14 +60,13 @@ class Node():
 		self.pub.publish(data)
 
 	def __init__(self):
-		self.delta_time = 0.1
 		self.pub = rospy.Publisher('pioneer/cmd_vel', Twist, queue_size=1)
 		self.pose = Pose()
 		rospy.Subscriber('cmd_vel', Twist, self.callback)
 		rospy.Subscriber('relative_pose', PoseStamped, self.write_pose)
 
 if __name__ == '__main__':
-	rospy.init_node("vel_refactoring")
+	rospy.init_node("vel_adaptation")
 	try:
 		node = Node()
 		while not rospy.is_shutdown():
