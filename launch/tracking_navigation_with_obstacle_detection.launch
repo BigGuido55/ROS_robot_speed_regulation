@@ -9,6 +9,8 @@
 	<arg name="distance_to_goal" default="0.35"/>
 	<arg name="max_num_of_no_actor" default="100"/>
 	<arg name="same_object_distance" default="0.2"/>
+	<arg name="lower_relative_bound" default="0.4"/>
+	<arg name="upper_relative_bound" default="2"/>
 
 	<node name="relative_pose_publisher" type="relative_pose_publisher.py" pkg="tracking_navigation">
 		<param name="tracking_frame" value="$(arg tracking_frame)"/>
@@ -25,5 +27,7 @@
 		<param name="distance_to_goal" value="$(arg distance_to_goal)"/>
 		<param name="max_num_of_no_actor" value="$(arg max_num_of_no_actor)"/>
 		<param name="same_object_distance" value="$(arg same_object_distance)"/>
+		<param name="lower_relative_bound" value="$(arg lower_relative_bound)"/>
+		<param name="upper_relative_bound" value="$(arg upper_relative_bound)"/>
 	</node>
 </launch>

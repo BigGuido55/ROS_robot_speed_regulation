@@ -96,6 +96,8 @@ class Node():
 
 		max_vel_factor = rospy.get_param("~max_vel_factor")
 		ideal_distance = rospy.get_param("~ideal_distance")
+		LRB = rospy.get_param("~lower_relative_bound")
+		URB = rospy.get_param("~upper_relative_bound")
 		
 
 		vel_factor = 0.0
@@ -103,19 +105,19 @@ class Node():
 		print ("distance: " + str(cur_distance))
 
 		if self.calculate_distance(self.apply_velocity(data), self.actor.center) < cur_distance:
-			if (0.4 * ideal_distance) <= cur_distance <= ideal_distance:
-				vel_factor = (5 * cur_distance / ideal_distance - 2) / 3
+			if (LRB * ideal_distance) <= cur_distance <= ideal_distance:
+				vel_factor = (cur_distance / ideal_distance - LRB) / (1 - LRB) 											#(5 * cur_distance / ideal_distance - 2) / 3
 			elif ideal_distance <= cur_distance <= 2 * ideal_distance:
-				vel_factor = (max_vel_factor - 1) * (cur_distance / ideal_distance - 1) + 1
-			elif cur_distance >= 2 * ideal_distance:
+				vel_factor = ((max_vel_factor - 1) * cur_distance / ideal_distance + URB - max_vel_factor) / (URB - 1) 	#(max_vel_factor - 1) * (cur_distance / ideal_distance - 1) + 1
+			elif cur_distance >= URB * ideal_distance:
 				vel_factor = max_vel_factor
 		else:
-			if cur_distance < (0.4 * ideal_distance): 
+			if cur_distance < (LRB * ideal_distance): 
 				vel_factor = max_vel_factor
-			elif (0.4 * ideal_distance) <= cur_distance <= ideal_distance: 
-				vel_factor = (5 * cur_distance * (1 - max_vel_factor) / ideal_distance - 2 + 5 * max_vel_factor) / 3
-			elif ideal_distance <= cur_distance <= 2 * ideal_distance: 
-				vel_factor = 2 - cur_distance / ideal_distance
+			elif (LRB * ideal_distance) <= cur_distance <= ideal_distance: 
+				vel_factor = ((1 - max_vel_factor) * cur_distance / ideal_distance + max_vel_factor - LRB) / (1 - LRB)	#(5 * cur_distance * (1 - max_vel_factor) / ideal_distance - 2 + 5 * max_vel_factor) / 3
+			elif ideal_distance <= cur_distance <= URB * ideal_distance: 
+				vel_factor = -(cur_distance / ideal_distance - URB) / (URB - 1) #2 - cur_distance / ideal_distance
 
 		data.linear.x *= vel_factor
 		data.linear.y *= vel_factor
