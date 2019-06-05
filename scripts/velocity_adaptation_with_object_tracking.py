@@ -131,7 +131,7 @@ class Node():
 		self.pub.publish(data)
 
 	def __init__(self):
-		self.pub = rospy.Publisher('pioneer/cmd_vel', Twist, queue_size=1)
+		self.pub = rospy.Publisher(rospy.get_param("~velocity_topic"), Twist, queue_size=1)
 		self.pioneerPose = Pose()
 		self.count = 0					#IF REACHES max_num_of_no_actor WE LOST ACTOR --> END NODE
 		self.actor = None
