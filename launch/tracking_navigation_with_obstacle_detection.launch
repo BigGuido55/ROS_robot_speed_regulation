@@ -8,8 +8,8 @@
 	<arg name="ideal_distance" default="2"/>
 	<arg name="time_delta" default="0.04"/>
 	<arg name="distance_to_goal" default="0.35"/>
-	<arg name="max_num_of_no_actor" default="100"/>
-	<arg name="same_object_distance" default="0.2"/>
+	<arg name="max_num_of_no_actor" default="75"/>
+	<arg name="same_object_distance" default="0.3"/>
 	<arg name="lower_relative_bound" default="0.4"/>
 	<arg name="upper_relative_bound" default="2"/>
 
