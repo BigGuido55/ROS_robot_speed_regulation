@@ -14,6 +14,7 @@ class Node():
 		self.pioneerPose = data.pose
 
 	def write_robot_goal(self, data):
+                print "message recieved"
 		self.pioneerGoalPose = data.pose
 
 	def write_circles(self, data):
