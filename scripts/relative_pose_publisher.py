@@ -9,7 +9,7 @@ if __name__ == '__main__':
 	rospy.init_node('final')
 	tfBuffer = tf2_ros.Buffer()
 	listener = tf2_ros.TransformListener(tfBuffer)
-	rate = rospy.Rate(100)
+	rate = rospy.Rate(25)
 	object_name = rospy.get_param("~object_name")
 	tracking_frame = rospy.get_param("~tracking_frame")
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	while not rospy.is_shutdown():
 		try:
 			tr = tfBuffer.lookup_transform(object_name, tracking_frame, rospy.Time())
-			pose.header = tr.header		#ne svida mi se to sto pise "animated_box" za frame
+			pose.header = tr.header
 			pose.pose.position.x = tr.transform.translation.x
 			pose.pose.position.y = tr.transform.translation.y
 			pose.pose.position.z = tr.transform.translation.z

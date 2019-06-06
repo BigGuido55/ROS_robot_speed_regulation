@@ -18,6 +18,7 @@ class Node():
 
 	def write_circles(self, data):
 		self.circles = data.circles
+		self.header = data.header
 
 	def calculate_distance(self, firstPosition, secondPosition):
 		return math.sqrt(math.pow((firstPosition.x - secondPosition.x), 2) + math.pow((firstPosition.y - secondPosition.y), 2))
@@ -130,23 +131,29 @@ class Node():
 		print ("factor: " + str(vel_factor) + "\n")
 		self.pub.publish(data)
 
+		obs = Obstacles()
+		obs.header = self.header
+		obs.circles.append(self.actor)
+		self.indicator.publish(obs)
+
 	def __init__(self):
 		self.pub = rospy.Publisher(rospy.get_param("~velocity_topic"), Twist, queue_size=1)
+		self.indicator = rospy.Publisher("actor_position", Obstacles, queue_size=1)
 		self.pioneerPose = Pose()
 		self.count = 0					#IF REACHES max_num_of_no_actor WE LOST ACTOR --> END NODE
 		self.actor = None
 		self.circles = None
-		rospy.Subscriber('cmd_vel', Twist, self.callback)
-		rospy.Subscriber('relative_pose', PoseStamped, self.write_robot_pose)
-		rospy.Subscriber('move_base_simple/goal', PoseStamped, self.write_robot_goal)
-		rospy.Subscriber('obstacles', Obstacles, self.write_circles)
+		rospy.Subscriber('cmd_vel', Twist, self.callback, queue_size=1)
+		rospy.Subscriber('relative_pose', PoseStamped, self.write_robot_pose, queue_size=1)
+		rospy.Subscriber('move_base_simple/goal', PoseStamped, self.write_robot_goal, queue_size=1)
+		rospy.Subscriber('raw_obstacles', Obstacles, self.write_circles, queue_size=1)
 
 if __name__ == '__main__':
 	rospy.init_node("vel_adapt_with_object_tracking")
 	try:
 		node = Node()
 		while not rospy.is_shutdown():
-			rospy.sleep(1.0)
+			rospy.spin()
 	except rospy.ROSInterruptException:
 		pass
 		
