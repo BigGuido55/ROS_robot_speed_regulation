@@ -8,8 +8,8 @@
 	<arg name="ideal_distance" default="2"/>
 	<arg name="time_delta" default="0.04"/>
 	<arg name="distance_to_goal" default="0.35"/>
-	<arg name="max_num_of_no_actor" default="75"/>
-	<arg name="same_object_distance" default="0.3"/>
+	<arg name="max_num_of_no_actor" default="150"/>
+	<arg name="same_object_distance" default="0.5"/>
 	<arg name="lower_relative_bound" default="0.4"/>
 	<arg name="upper_relative_bound" default="2"/>
 
@@ -22,6 +22,8 @@
 	<include file="$(find obstacle_detector)/launch/nodes.launch"/>
 
 	<node name="velocity_adaptation_with_object_tracking" type="velocity_adaptation_with_object_tracking.py" pkg="tracking_navigation" output="screen">
+		<param name="object_frame" value="$(arg tracking_frame)"/>
+		<param name="global_frame" value="$(arg object_name)"/>
 		<param name="max_vel_factor" value="$(arg max_vel_factor)"/>
 		<param name="ideal_distance" value="$(arg ideal_distance)"/>
 		<param name="velocity_topic" value="$(arg velocity_topic)"/>
