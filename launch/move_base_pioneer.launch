@@ -6,6 +6,6 @@
     <rosparam file="$(find tracking_navigation)/params/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find tracking_navigation)/params/global_costmap_params.yaml" command="load" />
     <rosparam file="$(find tracking_navigation)/params/base_local_planner_params.yaml" command="load" />
-	<remap from="map" to="pioneer/map"/>
+	<remap from="map" to="bravo/map"/>
   </node>
 </launch>

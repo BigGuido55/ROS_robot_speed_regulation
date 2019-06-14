@@ -3,6 +3,7 @@ import rospy
 import math
 import tf2_ros
 import tf2_geometry_msgs
+from tf2_geometry_msgs import PointStamped
 from tf.transformations import euler_from_quaternion
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import PoseStamped
@@ -15,37 +16,45 @@ class Node():
 	def write_robot_pose(self, data):
 		self.pioneerPose = data.pose
 
-
 	def write_robot_goal(self, data):
 		self.pioneerGoalPose = data.pose
 		self.actor = None
 
-
 	def write_circles(self, data):
 		object_frame = rospy.get_param("~object_frame")
 		global_frame = rospy.get_param("~global_frame")									#NE MOZE MAPA BITI OBJECT...
-		tf = self.tfBuffer.lookup_transform(object_frame, global_frame, rospy.Time())
-		
+		tf = self.tfBuffer.lookup_transform(global_frame, object_frame, rospy.Time(0))
+
 		orientation = tf.transform.rotation
 		quat_list = [orientation.x, orientation.y, orientation.z, orientation.w]
 		(roll, pitch, yaw) = euler_from_quaternion(quat_list)
+#		print yaw
 
-		#newData = Obstacles()						#for publishing transformed circles
-		#newData.circles = []
-		#newData.header = data.header
-		#newData.header.frame_id = "pioneer/map"
+		newData = Obstacles()						#for publishing transformed circles
+		newData.circles = []
+		newData.header = data.header
+		newData.header.frame_id = global_frame
 
 		self.circles = []
+
+		temp_point_stamped = PointStamped()
 		for circle in data.circles:
-			x = self.pioneerPose.position.x + math.cos(yaw) * circle.center.x + math.sin(yaw) * circle.center.y
-			y = self.pioneerPose.position.y - math.sin(yaw) * circle.center.x + math.cos(yaw) * circle.center.y
-			circle.center.x = x
-			circle.center.y = y
+			# x = self.pioneerPose.position.x + math.cos(yaw) * circle.center.x + math.sin(yaw) * circle.center.y
+			# y = self.pioneerPose.position.y - math.sin(yaw) * circle.center.x + math.cos(yaw) * circle.center.y
+			# circle.center.x = x
+			# circle.center.y = y
+
+			temp_point_stamped.point = circle.center
+
+			new_center = tf2_geometry_msgs.do_transform_point(temp_point_stamped, tf)
+			circle.center = new_center.point
 
 			self.circles.append(circle)
-			#newData.circles.append(circle)
+			newData.circles.append(circle)
 
-		#self.IDEMO.publish(newData)
+		self.transformed_obstacles.publish(newData)
+
+		self.circles = data.circles
 
 		max_num_of_no_actor = rospy.get_param("~max_num_of_no_actor")
 		self.header = data.header
@@ -99,7 +108,7 @@ class Node():
 		orientation = self.pioneerPose.orientation
 		quat_list = [orientation.x, orientation.y, orientation.z, orientation.w]
 		(roll, pitch, yaw) = euler_from_quaternion(quat_list)
-		
+
 		new_distance = Point()
 
 		if data.angular.z != 0.0:
@@ -135,7 +144,7 @@ class Node():
 		ideal_distance = rospy.get_param("~ideal_distance")
 		LRB = rospy.get_param("~lower_relative_bound")
 		URB = rospy.get_param("~upper_relative_bound")
-		
+
 
 		vel_factor = 0.0
 		cur_distance = self.calculate_distance(self.pioneerPose.position, self.actor.center)
@@ -143,7 +152,7 @@ class Node():
 
 		if self.calculate_distance(self.apply_velocity(data), self.actor.center) < cur_distance:
 			if (LRB * ideal_distance) <= cur_distance <= ideal_distance:
-				vel_factor = (cur_distance / ideal_distance - LRB) / (1 - LRB)								
+				vel_factor = (cur_distance / ideal_distance - LRB) / (1 - LRB)
 			elif ideal_distance <= cur_distance <= 2 * ideal_distance:
 				vel_factor = ((max_vel_factor - 1) * cur_distance / ideal_distance + URB - max_vel_factor) / (URB - 1)
 			elif cur_distance >= URB * ideal_distance:
@@ -177,7 +186,7 @@ class Node():
 		self.listener = tf2_ros.TransformListener(self.tfBuffer)
 		self.pub = rospy.Publisher(rospy.get_param("~velocity_topic"), Twist, queue_size=1)
 		self.indicator = rospy.Publisher("actor_position", Obstacles, queue_size=1)
-		#self.IDEMO = rospy.Publisher("IDEMO", Obstacles, queue_size=1)
+		self.transformed_obstacles = rospy.Publisher("transformed_obstacles", Obstacles, queue_size=1)
 		self.pioneerPose = Pose()
 		self.count = 0
 		self.actor = None
@@ -196,4 +205,4 @@ if __name__ == '__main__':
 			rospy.spin()
 	except rospy.ROSInterruptException:
 		pass
-		
+
